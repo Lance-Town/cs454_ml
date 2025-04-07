@@ -1,0 +1,6 @@
+# goal
+int32 state
+---
+bool success
+---
+float32 percent_finished
