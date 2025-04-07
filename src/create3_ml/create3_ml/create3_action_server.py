@@ -6,6 +6,8 @@ from rclpy.node import Node
 
 from create3_action_interfaces.action import ChangeState
 
+from .movement import Slash
+
 class ChangeStateActionServer(Node):
     def __init__(self):
         super().__init__('create3_change_state_action_server')
@@ -31,20 +33,29 @@ class ChangeStateActionServer(Node):
         # if (state == 1):
         #   self.movement.perform_state_one(feedback_msg, goal_handle) 
 
+        state = goal_handle.request.state
+        success = False
 
-        for i in range(10):
-            feedback_msg.percent_finished = (i+1)*10.0
-            self.get_logger().info(f'Feedback: {feedback_msg.percent_finished}')
+        if (state == 1):
+            slash = Slash()
+            success = slash.test_path() # TODO : pass in feedback_msg to update percent finished
+            feedback_msg.percent_finished = 100.0
+            self.get_logger().info(f'feedback: {feedback_msg.percent_finished}')
             goal_handle.publish_feedback(feedback_msg)
-            time.sleep(0.5)
+        else:
+            self.get_logger().info(f'State {state} not recognized')
+
+
+        # for i in range(10):
+        #     feedback_msg.percent_finished = (i+1)*10.0
+        #     self.get_logger().info(f'Feedback: {feedback_msg.percent_finished}')
+        #     goal_handle.publish_feedback(feedback_msg)
+        #     time.sleep(0.5)
 
         goal_handle.succeed()
         result = ChangeState.Result()
         
-        if feedback_msg.percent_finished == 100:
-            result.success = True
-        else:
-            result.success = False
+        result.success = success
 
         return result
 

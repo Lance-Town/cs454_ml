@@ -45,7 +45,7 @@ def main(args=None):
 
     action_client = ChangeStateActionClient()
 
-    action_client.send_goal(5)
+    action_client.send_goal(1)
 
     rclpy.spin(action_client)
 
