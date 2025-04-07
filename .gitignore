@@ -112,3 +112,4 @@ venv.bak/
 
 # Scripts for building/sourcing project
 compile.sh
+source.sh
