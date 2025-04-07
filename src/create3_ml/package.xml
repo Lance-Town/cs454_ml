@@ -3,7 +3,7 @@
 <package format="3">
   <name>create3_ml</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
+  <description>The create3 code for CS454 manufacturing line project</description>
   <maintainer email="85811392+Lance-Town@users.noreply.github.com">ubuntu</maintainer>
   <license>MIT</license>
 
