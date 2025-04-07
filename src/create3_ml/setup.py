@@ -20,6 +20,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'server = create3_ml.create3_action_server:main',
+            'client = create3_ml.create3_action_client:main',
         ],
     },
 )
