@@ -22,6 +22,16 @@ class ChangeStateActionServer(Node):
         feedback_msg = ChangeState.Feedback()
         feedback_msg.percent_finished = 0.0
 
+        # TODO depending on the state requested, do some work. Use an if statement most likely
+        # TODO I probably don't need the other create3_ml package. That one was going to contain the movement code, but I dont think I am going
+        # to need that. Really, I will include the irobot_create3 package as a dependecy of this one. Then I can create the movement.py that will 
+        # have the movements. This (i dont think) will need to be hosted on a node. It should just be able to send the movements without needing
+        # to be on its own node. Then we can do something like
+        # 
+        # if (state == 1):
+        #   self.movement.perform_state_one(feedback_msg, goal_handle) 
+
+
         for i in range(10):
             feedback_msg.percent_finished = (i+1)*10.0
             self.get_logger().info(f'Feedback: {feedback_msg.percent_finished}')
