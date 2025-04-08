@@ -1,5 +1,3 @@
-import time
-
 import rclpy
 from rclpy.action import ActionServer
 from rclpy.node import Node
@@ -33,10 +31,7 @@ class ChangeStateActionServer(Node):
         success = False
 
         if (state == 1):
-            success = self.robot.test_path() # TODO : pass in feedback_msg to update percent finished
-            feedback_msg.percent_finished = 100.0
-            self.get_logger().info(f'feedback: {feedback_msg.percent_finished}')
-            goal_handle.publish_feedback(feedback_msg)
+            success = self.robot.state_one(feedback_msg=feedback_msg, goal_handle=goal_handle) 
         else:
             self.get_logger().info(f'State {state} not recognized')
 
