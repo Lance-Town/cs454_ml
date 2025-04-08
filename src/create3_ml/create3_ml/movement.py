@@ -104,28 +104,48 @@ class Slash(Node):
         # Reset the goal ID, nothing should be running
         self._goal_uuid = None 
 
-    def sendRotateGoal(self,goal):
-        """
-        Sends a rotate goal asynchronously and 'blocks' until the goal is complete
-        """
-        self.get_logger().warning('DBG::sendRotateGoal::Start of Method')
+    def sendUndockGoal(self, goal):
         with lock:
-            rotate_handle = self._rotate_ac.send_goal_async(goal)
-            while not rotate_handle.done():
-                self.get_logger().warning('DBG::sendRotateGoal::Rotate_handle not done')
-                pass # Wait for Action Server to accept goal
-            
-            self.get_logger().warning('DBG::sendRotateGoal::Rotate_handle is DONE')
-            # Hold ID in case we need to cancel it
-            self._goal_uuid = rotate_handle.result() 
+            undock_handle = self._undock_ac.send_goal_async(goal)
+            while not undock_handle.done():
+                pass
 
+            self._goal_uuid = undock_handle.result()
+        
         while self._goal_uuid and self._goal_uuid.status == GoalStatus.STATUS_UNKNOWN:
-            self.get_logger().warning('DBG::sendRotateGoal::GoalStatus is UNKNOWN')
             pass # Wait until a Status has been assigned
 
         # After getting goalID, Loop while the goal is currently running
         while self._goal_uuid and self._goal_uuid.status is not GoalStatus.STATUS_SUCCEEDED:
-            self.get_logger().warning('DBG::sendRotateGoal::GoalStatus is NOT SUCCEEDED')
+            if self._goal_uuid is None or self._goal_uuid.status is GoalStatus.STATUS_CANCELED :
+                break # If the goal was canceled, stop looping otherwise loop till finished
+            pass
+
+        # Reset the goal ID, nothing should be running
+        self._goal_uuid = None 
+
+    def sendRotateGoal(self,goal):
+        """
+        Sends a rotate goal asynchronously and 'blocks' until the goal is complete
+        """
+        # self.get_logger().warning('DBG::sendRotateGoal::Start of Method')
+        with lock:
+            rotate_handle = self._rotate_ac.send_goal_async(goal)
+            while not rotate_handle.done():
+                # self.get_logger().warning('DBG::sendRotateGoal::Rotate_handle not done')
+                pass # Wait for Action Server to accept goal
+            
+            # self.get_logger().warning('DBG::sendRotateGoal::Rotate_handle is DONE')
+            # Hold ID in case we need to cancel it
+            self._goal_uuid = rotate_handle.result() 
+
+        while self._goal_uuid and self._goal_uuid.status == GoalStatus.STATUS_UNKNOWN:
+            # self.get_logger().warning('DBG::sendRotateGoal::GoalStatus is UNKNOWN')
+            pass # Wait until a Status has been assigned
+
+        # After getting goalID, Loop while the goal is currently running
+        while self._goal_uuid and self._goal_uuid.status is not GoalStatus.STATUS_SUCCEEDED:
+            # self.get_logger().warning('DBG::sendRotateGoal::GoalStatus is NOT SUCCEEDED')
             if self._goal_uuid is None or self._goal_uuid.status is GoalStatus.STATUS_CANCELED :
                 break # If the goal was canceled, stop looping otherwise loop till finished
             pass
@@ -145,7 +165,8 @@ class Slash(Node):
 
         undock_goal = Undock.Goal()
 
-        self._undock_ac.send_goal(undock_goal)
+        self.sendUndockGoal(undock_goal)
+
         self.get_logger().warning('UNDOCKED')
 
         return
@@ -216,6 +237,36 @@ class Slash(Node):
         self.get_logger().warning('ROTATING')
 
         self.sendRotateGoal(rotate_goal)
+
+    def state_one(self, feedback_msg, goal_handle):
+        """
+        State One for the robot. It is docked and needs to drive to Robot 2.
+
+        @param: feedback_msg: feedback message passed in from ROS2 action server
+        @param: goal_handle: goal passed in from ROS2 action server
+        """
+        self.undock_self()
+
+        feedback_msg.percent_finished = 25.0
+        goal_handle.publish_feedback(feedback_msg)
+
+        self.drive_away(dist=2.0)
+
+        feedback_msg.percent_finished = 50.0
+        goal_handle.publish_feedback(feedback_msg)
+
+        self.turn_distance()
+
+        feedback_msg.percent_finished = 75.0
+        goal_handle.publish_feedback(feedback_msg)
+
+        self.drive_away(dist=0.75)
+
+        feedback_msg.percent_finished = 100.0
+        goal_handle.publish_feedback(feedback_msg)
+
+        return True
+        
 
     def test_path(self):
         """
