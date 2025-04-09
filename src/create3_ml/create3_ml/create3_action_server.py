@@ -26,6 +26,7 @@ class ChangeStateActionServer(Node):
         
         feedback_msg = ChangeState.Feedback()
         feedback_msg.percent_finished = 0.0
+        goal_handle.publish_feedback(feedback_msg)
 
         state = goal_handle.request.state
         self.get_logger().info(f"GOAL STATE: {state}")
