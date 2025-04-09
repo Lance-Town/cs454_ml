@@ -36,6 +36,8 @@ class ChangeStateActionServer(Node):
             success = self.robot.state_one(feedback_msg=feedback_msg, goal_handle=goal_handle) 
         elif (state == 2):
             success = self.robot.state_two(feedback_msg=feedback_msg, goal_handle=goal_handle)
+        elif (state == 3):
+            success = self.robot.state_three(feedback_msg=feedback_msg, goal_handle=goal_handle)
         else:
             self.get_logger().info(f'State {state} not recognized')
 

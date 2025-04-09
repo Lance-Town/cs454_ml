@@ -49,6 +49,9 @@ def main(args=None):
 
         # Goal 2 (only starts after goal 1 is done)
         action_client.send_goal_and_wait(2)
+        
+        # Goal 3 
+        action_client.send_goal_and_wait(3)
 
     except KeyboardInterrupt:
         action_client.get_logger().info('KeyboardInterrupt, shutting down.')
