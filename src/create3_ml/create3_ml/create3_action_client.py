@@ -3,6 +3,7 @@ from rclpy.action import ActionClient
 from rclpy.node import Node
 
 from create3_action_interfaces.action import ChangeState
+from action_msgs.msg._goal_status import GoalStatus
 
 class ChangeStateActionClient(Node):
     def __init__(self):
@@ -18,6 +19,21 @@ class ChangeStateActionClient(Node):
         self._send_goal_future = self._action_client.send_goal_async(goal=goal_msg, feedback_callback=self.feedback_callback)
 
         self._send_goal_future.add_done_callback(self.goal_response_callback)
+
+        # while not self._send_goal_future.done():
+        #     pass
+        
+        # self._goal_uuid = self._send_goal_future.result()
+
+        # while self._goal_uuid and self._goal_uuid.status == GoalStatus.STATUS_UNKNOWN:
+        #     pass
+
+        # while self._goal_uuid and self._goal_uuid.status is not GoalStatus.STATUS_SUCCEEDED:
+        #     if self._goal_uuid is None or self._goal_uuid.status is GoalStatus.STATUS_CANCELED:
+        #         break
+        #     pass
+        
+        # self._goal_uuid = None
 
     def goal_response_callback(self, future):
         goal_handle = future.result()
@@ -46,8 +62,16 @@ def main(args=None):
     action_client = ChangeStateActionClient()
 
     action_client.send_goal(1)
+    action_client.send_goal(2)
 
-    rclpy.spin(action_client)
+    # rclpy.spin(action_client)
+    try:
+        rclpy.spin(action_client)
+    except KeyboardInterrupt:
+        action_client.get_logger().info('KeyboardInterrup, shutting down.')
+    finally:
+        action_client.destroy_node()
+        rclpy.shutdown()
 
 if __name__ == '__main__':
     main()

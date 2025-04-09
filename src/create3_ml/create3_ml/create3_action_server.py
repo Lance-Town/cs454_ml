@@ -28,10 +28,13 @@ class ChangeStateActionServer(Node):
         feedback_msg.percent_finished = 0.0
 
         state = goal_handle.request.state
+        self.get_logger().info(f"GOAL STATE: {state}")
         success = False
 
         if (state == 1):
             success = self.robot.state_one(feedback_msg=feedback_msg, goal_handle=goal_handle) 
+        elif (state == 2):
+            success = self.robot.state_two(feedback_msg=feedback_msg, goal_handle=goal_handle)
         else:
             self.get_logger().info(f'State {state} not recognized')
 
