@@ -152,6 +152,27 @@ class Slash(Node):
 
         # Reset the goal ID, nothing should be running
         self._goal_uuid = None 
+
+    def sendDockGoal(self, goal):
+        with lock:
+            undock_handle = self._dock_ac.send_goal_async(goal)
+            while not undock_handle.done():
+                pass
+
+            self._goal_uuid = undock_handle.result()
+        
+        while self._goal_uuid and self._goal_uuid.status == GoalStatus.STATUS_UNKNOWN:
+            pass # Wait until a Status has been assigned
+
+        # After getting goalID, Loop while the goal is currently running
+        while self._goal_uuid and self._goal_uuid.status is not GoalStatus.STATUS_SUCCEEDED:
+            if self._goal_uuid is None or self._goal_uuid.status is GoalStatus.STATUS_CANCELED :
+                break # If the goal was canceled, stop looping otherwise loop till finished
+            pass
+
+        # Reset the goal ID, nothing should be running
+        self._goal_uuid = None 
+
 #----------------------------------------------------------------------
 
     def undock_self(self):
@@ -198,16 +219,18 @@ class Slash(Node):
         """
         # Freshly started
         self.get_logger().warning('WAITING FOR SERVER')
-    # wait until the robot server is found and ready to receive a new goal
+        # wait until the robot server is found and ready to receive a new goal
         self._undock_ac.wait_for_server()
         self.get_logger().warning('SERVER AVAILABLE')
         self.get_logger().warning('CREATING DOCK GOAL')
 
-    # create new Dock goal object to send to server
+        # create new Dock goal object to send to server
         dock_goal = Dock.Goal()
 
-        self._dock_ac.send_goal(dock_goal)
         self.get_logger().warning('DOCKING')
+        self.sendDockGoal(dock_goal)
+        self.get_logger().warning('DOCKED')
+
 
 
     def turn_distance(self, radians=1.5708, degree=None):
@@ -219,12 +242,12 @@ class Slash(Node):
         """
         # Freshly started, undock
         self.get_logger().warning('WAITING FOR SERVER')
-    # wait until the robot server is found and ready to receive a new goal
+        # wait until the robot server is found and ready to receive a new goal
         self._rotate_ac.wait_for_server()
         self.get_logger().warning('SERVER AVAILABLE')
         self.get_logger().warning('CREATING TURN GOAL')
 
-    # create new Undock goal object to send to server
+        # create new Undock goal object to send to server
         rotate_goal = RotateAngle.Goal()
         self.get_logger().warning('TURN GOAL CREATED')
         # rotate_goal.angle = 0.5 * math.pi
@@ -270,17 +293,53 @@ class Slash(Node):
     def state_two(self, feedback_msg, goal_handle):
         self.turn_distance(degree=-90.0)
 
+        feedback_msg.percent_finished = 14.0
+        goal_handle.publish_feedback(feedback_msg)
+
         self.drive_away(dist=1.0)
 
+        feedback_msg.percent_finished = 28.0
+        goal_handle.publish_feedback(feedback_msg)
+
         self.turn_distance()
+
+        feedback_msg.percent_finished = 42.0
+        goal_handle.publish_feedback(feedback_msg)
 
         self.drive_away(dist=6.5)
 
+        feedback_msg.percent_finished = 56.0
+        goal_handle.publish_feedback(feedback_msg)
+
         self.turn_distance()
+
+        feedback_msg.percent_finished = 82.0
+        goal_handle.publish_feedback(feedback_msg)
 
         self.drive_away(dist=1.0)
 
+        feedback_msg.percent_finished = 100.0
+        goal_handle.publish_feedback(feedback_msg)
+
         return True
+
+    def state_three(self, feedback_msg, goal_handle):
+        self.turn_distance(degree=180.0)
+
+        self.drive_away(1.0)
+
+        self.turn_distance(degree=-90.0)
+
+        self.drive_away(7.25)
+
+        self.turn_distance(degree=-90.0)
+
+        self.drive_away(2.0)
+
+        self.dock_self()
+
+        return True
+        
 
     def test_path(self):
         """
