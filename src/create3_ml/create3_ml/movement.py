@@ -267,6 +267,20 @@ class Slash(Node):
 
         return True
         
+    def state_two(self, feedback_msg, goal_handle):
+        self.turn_distance(degree=-90.0)
+
+        self.drive_away(dist=1.0)
+
+        self.turn_distance()
+
+        self.drive_away(dist=6.5)
+
+        self.turn_distance()
+
+        self.drive_away(dist=1.0)
+
+        return True
 
     def test_path(self):
         """
