@@ -22,6 +22,7 @@ setup(
         'console_scripts': [
             'server = create3_ml.create3_action_server:main',
             'client = create3_ml.create3_action_client:main',
+            'status = create3_ml.create3_status_node:main',
         ],
     },
 )
