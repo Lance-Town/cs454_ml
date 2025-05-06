@@ -23,6 +23,8 @@ setup(
             'server = create3_ml.create3_action_server:main',
             'client = create3_ml.create3_action_client:main',
             'status = create3_ml.create3_status_node:main',
+            'modbus = create3_ml.pymodbus_server_test_lance:main',
+            'control = create3_ml.create3_control_node:main',
         ],
     },
 )

@@ -6,10 +6,11 @@ from sensor_msgs.msg import BatteryState
 from nav_msgs.msg import Odometry
 from irobot_create_msgs.msg import KidnapStatus
 from scipy.spatial.transform import Rotation
+# from numpy import uint16
 
 class RobotStatusNode(Node):
     def __init__(self, namespace='create3_03EE'):
-        super().__init__('robot_status_node')
+        super().__init__(f'{namespace}_status_node')
         self.namespace = namespace
 
         qos = QoSProfile(depth=11)
@@ -25,8 +26,8 @@ class RobotStatusNode(Node):
         self.create_subscription(KidnapStatus, f'/{self.namespace}/kidnap_status', self.kidnap_callback, qos)
 
     def battery_callback(self, msg):
-        self.status_data['battery'] = msg.percentage
-        self.get_logger().info(f'Battery: {(self.status_data["battery"]*100):.2f}%')
+        self.status_data['battery'] = (msg.percentage*100)
+        self.get_logger().info(f'Battery: {(self.status_data["battery"])}%')
 
     def odom_callback(self, msg):
         self.status_data['position'] = {
@@ -44,14 +45,28 @@ class RobotStatusNode(Node):
                                                 'w': msg.pose.pose.orientation.w
                                             }
                                         }
-        self.get_logger().info(f'{self.status_data["position"]}')
+        # self.get_logger().info(f'{self.status_data["position"]}')
 
     def kidnap_callback(self, msg):
         self.status_data['kidnap'] = msg.is_kidnapped
-        self.get_logger().info(f'Kidnap Status: {self.status_data["kidnap"]}')
+        # self.get_logger().info(f'Kidnap Status: {self.status_data["kidnap"]}')
 
     def get_status(self):
         return self.status_data
+
+    def get_battery(self) -> int:
+        if (self.status_data["battery"] is None):
+            return -1
+        return self.status_data["battery"]
+    
+    def get_position(self):
+        if (self.status_data["position"] is None):
+            return [0,0,0]
+        else:
+            return [int(self.status_data['position']['position']['x']), int(self.status_data['position']['position']['y'])]
+        
+    def get_degree_angle(self):
+        pass
 
 def main(args=None):
     rclpy.init(args=args)
@@ -59,7 +74,7 @@ def main(args=None):
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:
-        pass
+        node.get_logger().info('KeyBoard Interrupt. Shutting Down.')
     finally:
         node.destroy_node()
         rclpy.shutdown()
