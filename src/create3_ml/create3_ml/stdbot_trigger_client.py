@@ -15,14 +15,3 @@ class TriggerClient(Node):
         future = self.cli.call_async(req)
         rclpy.spin_until_future_complete(self, future)
         return future.result()
-
-# def main():
-#     rclpy.init()
-#     tc = TriggerClient()
-#     tc.send_request()
-#     # rclpy.spin()
-#     tc.destroy_node()
-#     rclpy.shutdown()
-
-# if __name__ == '__main__':
-#     main()
