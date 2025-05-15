@@ -5,6 +5,7 @@ from std_msgs.msg import String
 from sensor_msgs.msg import BatteryState
 from nav_msgs.msg import Odometry
 from irobot_create_msgs.msg import KidnapStatus
+from irobot_create_msgs.msg import DockStatus
 from scipy.spatial.transform import Rotation
 # from numpy import uint16
 
@@ -18,12 +19,14 @@ class RobotStatusNode(Node):
         self.status_data = {
             'battery': None,
             'position': None,
-            'kidnap': None
+            'kidnap': None,
+            'dock': None
         }
 
         self.create_subscription(BatteryState, f'/{self.namespace}/battery_state', self.battery_callback, qos)
         self.create_subscription(Odometry, f'/{self.namespace}/odom', self.odom_callback, qos)
         self.create_subscription(KidnapStatus, f'/{self.namespace}/kidnap_status', self.kidnap_callback, qos)
+        self.create_subscription(DockStatus, f'{namespace}/dock_status', self.docked_callback, qos)
 
     def battery_callback(self, msg):
         self.status_data['battery'] = (msg.percentage*100)
@@ -45,11 +48,12 @@ class RobotStatusNode(Node):
                                                 'w': msg.pose.pose.orientation.w
                                             }
                                         }
-        # self.get_logger().info(f'{self.status_data["position"]}')
 
     def kidnap_callback(self, msg):
         self.status_data['kidnap'] = msg.is_kidnapped
-        # self.get_logger().info(f'Kidnap Status: {self.status_data["kidnap"]}')
+    
+    def docked_callback(self, msg):
+        self.status_data['dock'] = msg.is_docked
 
     def get_status(self):
         return self.status_data
@@ -64,6 +68,11 @@ class RobotStatusNode(Node):
             return [0,0,0]
         else:
             return [int(self.status_data['position']['position']['x']), int(self.status_data['position']['position']['y'])]
+
+    def get_dock_status(self) -> bool:
+        if (self.status_data["dock"] is None):
+            return True
+        return self.status_data["dock"]
         
     def get_degree_angle(self):
         pass
