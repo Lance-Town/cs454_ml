@@ -25,6 +25,7 @@ setup(
             'status = create3_ml.create3_status_node:main',
             'modbus = create3_ml.pymodbus_server_test_lance:main',
             'control = create3_ml.create3_control_node:main',
+            'start = create3_ml.pymodbus_start_button:main'
         ],
     },
 )
