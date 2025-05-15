@@ -19,7 +19,7 @@ import threading
 lock = threading.Lock()
 
 def updating_task(context):
-    register_type = 3 #input register
+    register_type = 4 #input register
     device_id = 0x01
     address = 0x01
     count = 1
@@ -35,10 +35,13 @@ def updating_task(context):
 
             battery = uint16(create3_sn.get_battery())
             position = create3_sn.get_position()
+            dock = create3_sn.get_dock_status()
 
+            # publish messages
             publish_to_address(context=context, register_type=0x04, device_id=0x01, address=0x01, count=1, payload=[uint16(battery)])
             publish_to_address(context=context, register_type=0x04, device_id=0x01, address=0x02, count=1, payload=[uint16(position[0])])
             publish_to_address(context=context, register_type=0x04, device_id=0x01, address=0x03, count=1, payload=[uint16(position[1])])
+            publish_to_address(context=context, register_type=0x04, device_id=0x01, address=0x05, count=1, payload=[dock])
 
 def setup_server():
     def get_datablock():
